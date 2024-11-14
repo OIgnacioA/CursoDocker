@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    container_name: mi-base-datos
+    networks:
+      - mi-red
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: Data
+      MYSQL_USER: oscar
+      MYSQL_PASSWORD: 1234
+      MYSQL_PORT: 3306  # Opcional, solo si tu app lo necesita
+
+   
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "db", "-u", "oscar", "-p1234", "-e", "SELECT 1;"]
+      interval: 30s
+      retries: 10       # Aumenta el número de intentos
+      start_period: 120s # Aumenta el período de inicio
+      timeout: 30s
+   # ports:
+    #  - "3306:3306"  # Agregado el puerto para MySQL
+
+  app:
+    image: sehent/primer-entregable:2.0
+    container_name: mi-aplicacion
+    depends_on:
+      db:
+        condition: service_healthy  # Esperar a que la base de datos esté saludable
+    networks:
+      - mi-red
+    ports:
+      - "3000:3000"
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: oscar
+      MYSQL_PASSWORD: 1234
+      MYSQL_DB: Data
+
+networks:
+  mi-red:
+
+volumes:
+  mysql-datos:
+
